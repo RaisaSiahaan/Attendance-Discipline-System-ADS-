@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Checklist Calon Mantu</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Poppins',sans-serif;
+min-height:100vh;
+overflow-x:hidden;
+color:white;
+position:relative;
+}
+
+/* =========================
+BACKGROUND FOTO
+========================= */
+
+body::before{
+content:'';
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+
+/* GANTI FOTO DI SINI */
+background:
+linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.7)),
+url('abang.jpeg');
+
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+z-index:-3;
+}
+
+body::after{
+content:'';
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+backdrop-filter:blur(4px);
+z-index:-2;
+}
+
+/* =========================
+FLOATING LOVE EFFECT
+========================= */
+
+.hearts{
+position:fixed;
+width:100%;
+height:100%;
+overflow:hidden;
+pointer-events:none;
+z-index:-1;
+}
+
+.hearts span{
+position:absolute;
+bottom:-50px;
+font-size:20px;
+animation:floatUp linear infinite;
+opacity:0.6;
+}
+
+@keyframes floatUp{
+
+0%{
+transform:translateY(0) rotate(0deg);
+opacity:0;
+}
+
+10%{
+opacity:0.7;
+}
+
+100%{
+transform:translateY(-120vh) rotate(360deg);
+opacity:0;
+}
+
+}
+
+/* =========================
+LAYOUT
+========================= */
+
+.container{
+max-width:1300px;
+margin:auto;
+padding:30px;
+}
+
+.hero{
+text-align:center;
+padding:60px 30px;
+border-radius:35px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+border:1px solid rgba(255,255,255,0.1);
+box-shadow:0 20px 50px rgba(0,0,0,0.3);
+margin-bottom:30px;
+position:relative;
+overflow:hidden;
+}
+
+.hero::before{
+content:'';
+position:absolute;
+width:300px;
+height:300px;
+background:rgba(255,255,255,0.08);
+border-radius:50%;
+top:-120px;
+right:-100px;
+}
+
+.hero h1{
+font-size:52px;
+margin-bottom:15px;
+font-weight:700;
+}
+
+.hero p{
+max-width:800px;
+margin:auto;
+line-height:1.8;
+opacity:0.9;
+font-size:16px;
+}
+
+.love-text{
+margin-top:20px;
+font-size:20px;
+color:#fbcfe8;
+font-weight:600;
+}
+
+.controls{
+margin-top:35px;
+display:grid;
+grid-template-columns:1fr 220px 220px;
+gap:15px;
+}
+
+input{
+width:100%;
+padding:16px;
+border:none;
+border-radius:18px;
+font-size:15px;
+outline:none;
+font-family:'Poppins',sans-serif;
+background:rgba(255,255,255,0.95);
+}
+
+button{
+border:none;
+border-radius:18px;
+font-weight:600;
+cursor:pointer;
+font-family:'Poppins',sans-serif;
+transition:0.3s;
+font-size:15px;
+}
+
+.add-btn{
+background:linear-gradient(135deg,#ec4899,#db2777);
+color:white;
+}
+
+.reset-btn{
+background:linear-gradient(135deg,#ef4444,#dc2626);
+color:white;
+}
+
+button:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.search-box{
+margin-bottom:30px;
+}
+
+.people-list{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+gap:25px;
+}
+
+.card{
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:28px;
+padding:25px;
+box-shadow:0 20px 40px rgba(0,0,0,0.3);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px) scale(1.01);
+}
+
+.card-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.card-top h2{
+font-size:28px;
+}
+
+.progress-badge{
+padding:10px 14px;
+border-radius:999px;
+background:rgba(236,72,153,0.25);
+color:#fbcfe8;
+font-weight:700;
+font-size:14px;
+}
+
+.progress-wrapper{
+margin-bottom:20px;
+}
+
+.progress-text{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+font-size:14px;
+}
+
+.progress-bar{
+width:100%;
+height:18px;
+background:rgba(255,255,255,0.15);
+border-radius:999px;
+overflow:hidden;
+}
+
+.progress-fill{
+height:100%;
+width:0%;
+border-radius:999px;
+background:linear-gradient(90deg,#ec4899,#f472b6,#f9a8d4);
+transition:0.4s;
+}
+
+.checklist{
+max-height:480px;
+overflow:auto;
+padding-right:5px;
+}
+
+.check-item{
+display:flex;
+align-items:center;
+gap:12px;
+padding:14px;
+margin-bottom:12px;
+background:rgba(255,255,255,0.08);
+border-radius:16px;
+transition:0.3s;
+}
+
+.check-item:hover{
+background:rgba(255,255,255,0.14);
+}
+
+.check-item input{
+width:22px;
+height:22px;
+cursor:pointer;
+accent-color:#ec4899;
+}
+
+.check-item label{
+flex:1;
+line-height:1.6;
+cursor:pointer;
+}
+
+.completed{
+opacity:0.6;
+}
+
+.completed label{
+text-decoration:line-through;
+}
+
+.delete-btn{
+width:100%;
+margin-top:20px;
+padding:14px;
+background:linear-gradient(135deg,#ef4444,#b91c1c);
+color:white;
+}
+
+.empty{
+grid-column:1/-1;
+text-align:center;
+padding:80px 20px;
+background:rgba(255,255,255,0.08);
+border-radius:25px;
+backdrop-filter:blur(12px);
+}
+
+.footer{
+text-align:center;
+padding:40px 20px;
+opacity:0.8;
+font-size:14px;
+}
+
+/* =========================
+SCROLLBAR
+========================= */
+
+::-webkit-scrollbar{
+width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+background:#ec4899;
+border-radius:20px;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+.hero h1{
+font-size:34px;
+}
+
+.controls{
+grid-template-columns:1fr;
+}
+
+.container{
+padding:15px;
+}
+
+.people-list{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="container">
+
+<div class="hero">
+
+<h1>💍 Checklist Calon Mantu</h1>
+
+<p>
+Mangga, sok di checklist semua kelakuan calon mantu apakah sesuai kriteria Bundo yaaaaa abang,,
+</p>
+
+<div class="love-text">
+❤️ Together Forever ❤️
+</div>
+
+<div class="controls">
+
+<input
+type="text"
+id="personName"
+placeholder="Masukkan nama calon mantu..."
+>
+
+<button class="add-btn" onclick="addPerson()">
++ Tambah Orang
+</button>
+
+<button class="reset-btn" onclick="resetAllData()">
+Reset Semua
+</button>
+
+</div>
+
+</div>
+
+<div class="search-box">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Cari nama progress calon mantu..."
+onkeyup="renderPeople()"
+>
+
+</div>
+
+<div class="people-list" id="peopleList"></div>
+
+<div class="footer">
+Made with ❤️ for your relationship journey
+</div>
+
+</div>
+
+<script>
+
+/* =========================
+CHECKLIST
+========================= */
+
+const defaultChecklist = [
+
+"Rajin ibadah",
+"Sopan kepada orang tua",
+"Punya pekerjaan tetap",
+"Tidak toxic",
+"Bertanggung jawab",
+"Jujur",
+"Tidak posesif",
+"Bisa komunikasi baik",
+"Menyayangi keluarga",
+"Punya tujuan hidup",
+"Mandiri",
+"Tidak boros",
+"Punya tabungan",
+"Tidak egois",
+"Humoris",
+"Suka anak-anak",
+"Setia",
+"Tidak kasar",
+"Punya attitude baik",
+"Tidak manipulatif",
+"Mau berkembang",
+"Bisa kerja sama",
+"Romantis secukupnya",
+"Punya empati",
+"Menghargai pasangan",
+"Tidak mudah marah",
+"Bisa dipercaya",
+"Tidak suka drama",
+"Mendukung karir pasangan",
+"Siap menikah"
+
+];
+
+let people =
+JSON.parse(localStorage.getItem('calonMantuData')) || [];
+
+/* =========================
+SAVE DATA
+========================= */
+
+function saveData(){
+
+localStorage.setItem(
+'calonMantuData',
+JSON.stringify(people)
+);
+
+}
+
+/* =========================
+ADD PERSON
+========================= */
+
+function addPerson(){
+
+const input =
+document.getElementById('personName');
+
+const name =
+input.value.trim();
+
+if(name === ''){
+
+alert('Masukkan nama terlebih dahulu');
+return;
+
+}
+
+const exists =
+people.find(p =>
+p.name.toLowerCase() ===
+name.toLowerCase()
+);
+
+if(exists){
+
+alert('Nama sudah ada');
+return;
+
+}
+
+const newPerson = {
+
+id:Date.now(),
+
+name:name,
+
+checklist:defaultChecklist.map(item => ({
+text:item,
+checked:false
+}))
+
+};
+
+people.push(newPerson);
+
+saveData();
+
+renderPeople();
+
+input.value='';
+
+confetti({
+
+particleCount:180,
+spread:120,
+origin:{ y:0.6 }
+
+});
+
+}
+
+/* =========================
+TOGGLE CHECKLIST
+========================= */
+
+function toggleChecklist(personId,index){
+
+const person =
+people.find(p => p.id === personId);
+
+person.checklist[index].checked =
+!person.checklist[index].checked;
+
+saveData();
+
+renderPeople();
+
+confetti({
+
+particleCount:80,
+spread:70,
+origin:{ y:0.75 }
+
+});
+
+const progress =
+calculateProgress(person);
+
+if(progress === 100){
+
+setTimeout(() => {
+
+confetti({
+particleCount:400,
+spread:180,
+origin:{ y:0.6 }
+});
+
+},300);
+
+}
+
+}
+
+/* =========================
+PROGRESS
+========================= */
+
+function calculateProgress(person){
+
+const checked =
+person.checklist.filter(
+item => item.checked
+).length;
+
+return Math.round(
+(checked / person.checklist.length) * 100
+);
+
+}
+
+/* =========================
+DELETE
+========================= */
+
+function deletePerson(id){
+
+const confirmDelete =
+confirm('Hapus data ini?');
+
+if(!confirmDelete) return;
+
+people =
+people.filter(p => p.id !== id);
+
+saveData();
+
+renderPeople();
+
+}
+
+/* =========================
+RESET ALL
+========================= */
+
+function resetAllData(){
+
+const confirmReset =
+confirm('Semua data akan dihapus permanen.');
+
+if(!confirmReset) return;
+
+localStorage.removeItem('calonMantuData');
+
+people=[];
+
+renderPeople();
+
+}
+
+/* =========================
+RENDER
+========================= */
+
+function renderPeople(){
+
+const container =
+document.getElementById('peopleList');
+
+const keyword =
+document.getElementById('searchInput')
+.value
+.toLowerCase();
+
+const filtered =
+people.filter(person =>
+person.name.toLowerCase()
+.includes(keyword)
+);
+
+if(filtered.length === 0){
+
+container.innerHTML = `
+<div class="empty">
+<h2>Belum Ada Data</h2>
+<p>Tambahkan nama calon mantu terlebih dahulu 💖</p>
+</div>
+`;
+
+return;
+
+}
+
+container.innerHTML =
+filtered.map(person => {
+
+const progress =
+calculateProgress(person);
+
+const checkedCount =
+person.checklist.filter(
+item => item.checked
+).length;
+
+return `
+
+<div class="card">
+
+<div class="card-top">
+
+<h2>${person.name}</h2>
+
+<div class="progress-badge">
+${progress}%
+</div>
+
+</div>
+
+<div class="progress-wrapper">
+
+<div class="progress-text">
+<span>Progress Checklist</span>
+<span>${checkedCount}/30</span>
+</div>
+
+<div class="progress-bar">
+
+<div
+class="progress-fill"
+style="width:${progress}%"
+></div>
+
+</div>
+
+</div>
+
+<div class="checklist">
+
+${person.checklist.map((item,index)=>`
+
+<div class="check-item ${item.checked ? 'completed' : ''}">
+
+<input
+type="checkbox"
+${item.checked ? 'checked' : ''}
+onchange="toggleChecklist(${person.id},${index})"
+>
+
+<label>${item.text}</label>
+
+</div>
+
+`).join('')}
+
+</div>
+
+<button
+class="delete-btn"
+onclick="deletePerson(${person.id})"
+>
+Hapus Data
+</button>
+
+</div>
+
+`;
+
+}).join('');
+
+}
+
+/* =========================
+FLOATING HEARTS
+========================= */
+
+function createHearts(){
+
+const hearts =
+document.getElementById('hearts');
+
+setInterval(() => {
+
+const heart =
+document.createElement('span');
+
+heart.innerHTML =
+['💖','💕','💗','💘','❤️'][Math.floor(Math.random()*5)];
+
+heart.style.left =
+Math.random()*100 + 'vw';
+
+heart.style.animationDuration =
+(5 + Math.random()*5) + 's';
+
+heart.style.fontSize =
+(15 + Math.random()*25) + 'px';
+
+hearts.appendChild(heart);
+
+setTimeout(() => {
+heart.remove();
+},10000);
+
+},500);
+
+}
+
+createHearts();
+
+renderPeople();
+
+</script>
+
+</body>
+</html>
