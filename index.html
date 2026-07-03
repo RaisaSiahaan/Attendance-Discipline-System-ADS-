@@ -212,7 +212,7 @@ Belum Scan
 <h5>Pelanggaran</h5>
 <select class="form-select mb-3" id="jenis">
 <option value="">-- Tidak Ada Pelanggaran --</option>
-<option>Absensi</option>
+<option>Presensi</option>
 <option>Datang Terlambat</option>
 <option>Salah Seragam</option>
 <option>Atribut Seragam Tidak Lengkap</option>
@@ -231,12 +231,10 @@ class="form-control mb-3"
 id="petugas"
 placeholder="Nama Petugas">
 <button
-class="btn btn-danger btn-save"
 id="btnSimpan"
+class="btn btn-danger btn-save"
+onclick="saveAttendance()"
 disabled>
-<i class="bi bi-save"></i>
-Simpan Pelanggaran
-</button>
 </div>
 </div>
 </div>
@@ -265,7 +263,7 @@ Memproses...
 </div>
 <script>
 
-const API_URL="https://script.google.com/macros/s/AKfycbyTmIK_oQ2-6iaZBFPmJ62vnZuFFTXYwsgN7UFDqTlj_UFlDe3a1cxR9wYq-pMLNeqJhg/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbzDMLVdBd1p5x6V5Wvyi9aSiIUDJ2JdEzIxs46Vdu1E2BAM4B1PhLtt4F8-VvercTCSmw/exec";
 let currentStudent=null;
 let html5QrCode;
 let cameraRunning=false;
@@ -388,7 +386,7 @@ function getStudent(barcode){
             document.getElementById("nama").innerHTML = data.nama;
             document.getElementById("nis").innerHTML = data.nis;
             document.getElementById("kelas").innerHTML = data.kelas;
-            document.getElementById("status").innerHTML = "Sudah ditemukan";
+            document.getElementById("status").innerHTML = "Aktif";
 
             currentStudent = data;
 
@@ -410,6 +408,76 @@ function getStudent(barcode){
         Swal.fire({
             icon:"error",
             title:"Gagal mengambil data",
+            text:err
+        });
+
+    });
+
+}
+function saveAttendance(){
+
+    if(currentStudent == null){
+        Swal.fire("Silakan scan kartu terlebih dahulu.");
+        return;
+    }
+
+    const jenis = document.getElementById("jenis").value;
+    const keterangan = document.getElementById("keterangan").value;
+    const petugas = document.getElementById("petugas").value;
+
+    if(jenis==""){
+        Swal.fire("Pilih jenis pelanggaran.");
+        return;
+    }
+
+    document.getElementById("loading").style.display="flex";
+
+    fetch(API_URL,{
+        method:"POST",
+        body:JSON.stringify({
+            action:"saveAttendance",
+            barcode:currentStudent.barcode,
+            nis:currentStudent.nis,
+            nama:currentStudent.nama,
+            kelas:currentStudent.kelas,
+            jenis:jenis,
+            keterangan:keterangan,
+            petugas:petugas
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+
+        document.getElementById("loading").style.display="none";
+
+        if(data.status){
+
+            Swal.fire({
+                icon:"success",
+                title:"Data berhasil disimpan"
+            });
+
+            document.getElementById("jenis").value="";
+            document.getElementById("keterangan").value="";
+            document.getElementById("btnSimpan").disabled=true;
+
+        }else{
+
+            Swal.fire({
+                icon:"error",
+                title:data.message
+            });
+
+        }
+
+    })
+    .catch(err=>{
+
+        document.getElementById("loading").style.display="none";
+
+        Swal.fire({
+            icon:"error",
+            title:"Gagal menyimpan",
             text:err
         });
 
