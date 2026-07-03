@@ -618,6 +618,14 @@ async function loadHistory() {
     }
 
 }
+function setStudent(data) {
+   currentStudent = data;
+   document.getElementById("nama").textContent = data?.nama || "-";
+   document.getElementById("nis").textContent = data?.nis || "-";
+   document.getElementById("kelas").textContent = data?.kelas || "-";
+   document.getElementById("status").textContent = data ? "Siap Disimpan" : "Belum Scan";
+   document.getElementById("btnSimpan").disabled = !data;
+}
 
 // Load saat halaman dibuka
 loadHistory();
