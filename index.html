@@ -393,7 +393,7 @@ async function onScanSuccess(decodedText) {
 
     try {
 
-        await getStudent(decodedText);
+        await getSiswa(decodedText);
 
     } catch (err) {
 
@@ -419,12 +419,12 @@ async function onScanSuccess(decodedText) {
 
 }
 
-async function getStudent(barcode) {
+async function getSiswa(barcode) {
 
     try {
 
         const response = await fetch(
-            `${API_URL}?action=getStudent&barcode=${encodeURIComponent(barcode)}`
+            `${API_URL}?action=getSiswa&barcode=${encodeURIComponent(barcode)}`
         );
 
         if (!response.ok) {
