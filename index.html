@@ -212,7 +212,7 @@ Belum Scan
 <hr>
 <h5>Pelanggaran</h5>
 <select class="form-select mb-3" id="jenis">
-<option value="">-- Tidak Ada Pelanggaran --</option>
+<option value="">-- Presensi/Pelanggaran --</option>
 <option>Presensi</option>
 <option>Datang Terlambat</option>
 <option>Salah Seragam</option>
@@ -226,16 +226,14 @@ rows="3"
 placeholder="Keterangan"
 id="keterangan"
 ></textarea>
-<input
-type="text"
-class="form-control mb-3"
-id="petugas"
-placeholder="Nama Petugas">
 <button
 id="btnSimpan"
 class="btn btn-danger btn-save"
 onclick="saveAttendance()"
 disabled>
+<i class="bi bi-save"></i>
+Simpan Pelanggaran
+</button>
 </div>
 </div>
 </div>
@@ -262,9 +260,9 @@ Belum ada data...
 Memproses...
 </div>
 </div>
-<script>
 
-const API_URL="https://script.google.com/macros/s/AKfycbzDMLVdBd1p5x6V5Wvyi9aSiIUDJ2JdEzIxs46Vdu1E2BAM4B1PhLtt4F8-VvercTCSmw/exec";
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxafSULqj-WpXv_HIC8iVf-H-5XkV9btj3EHC0v8oMK9sGcWuO6B-YghjpE75eSpYmvKQ/exec";
 let currentStudent=null;
 let html5QrCode;
 let cameraRunning=false;
@@ -384,16 +382,25 @@ function getStudent(barcode){
 
         if(data.status){
 
+            currentStudent = data;
+
             document.getElementById("nama").innerHTML = data.nama;
             document.getElementById("nis").innerHTML = data.nis;
             document.getElementById("kelas").innerHTML = data.kelas;
-            document.getElementById("status").innerHTML = "Aktif";
-
-            currentStudent = data;
+            document.getElementById("status").innerHTML = "Siap Disimpan";
 
             document.getElementById("btnSimpan").disabled = false;
 
         }else{
+
+            currentStudent = null;
+
+            document.getElementById("nama").innerHTML = "-";
+            document.getElementById("nis").innerHTML = "-";
+            document.getElementById("kelas").innerHTML = "-";
+            document.getElementById("status").innerHTML = "Belum Scan";
+
+            document.getElementById("btnSimpan").disabled = true;
 
             Swal.fire({
                 icon:"error",
@@ -406,10 +413,19 @@ function getStudent(barcode){
 
     .catch(err=>{
 
+        currentStudent = null;
+
+        document.getElementById("nama").innerHTML = "-";
+        document.getElementById("nis").innerHTML = "-";
+        document.getElementById("kelas").innerHTML = "-";
+        document.getElementById("status").innerHTML = "Belum Scan";
+
+        document.getElementById("btnSimpan").disabled = true;
+
         Swal.fire({
             icon:"error",
             title:"Gagal mengambil data",
-            text:err
+            text:String(err)
         });
 
     });
@@ -424,7 +440,6 @@ function saveAttendance(){
 
     const jenis = document.getElementById("jenis").value;
     const keterangan = document.getElementById("keterangan").value;
-    const petugas = document.getElementById("petugas").value;
 
     if(jenis==""){
         Swal.fire("Pilih jenis pelanggaran.");
@@ -433,17 +448,19 @@ function saveAttendance(){
 
     document.getElementById("loading").style.display="flex";
 
-    fetch(API_URL,{
-        method:"POST",
-        body:JSON.stringify({
+fetch(API_URL,{
+    method:"POST",
+    headers:{
+        "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
             action:"saveAttendance",
             barcode:currentStudent.barcode,
             nis:currentStudent.nis,
             nama:currentStudent.nama,
             kelas:currentStudent.kelas,
             jenis:jenis,
-            keterangan:keterangan,
-            petugas:petugas
+            keterangan:keterangan
         })
     })
     .then(res=>res.json())
@@ -453,38 +470,72 @@ function saveAttendance(){
 
         if(data.status){
 
-            Swal.fire({
-                icon:"success",
-                title:"Data berhasil disimpan"
-            });
-
-            document.getElementById("jenis").value="";
-            document.getElementById("keterangan").value="";
-            document.getElementById("btnSimpan").disabled=true;
-
-        }else{
-
-            Swal.fire({
-                icon:"error",
-                title:data.message
-            });
-
-        }
-
-    })
-    .catch(err=>{
-
-        document.getElementById("loading").style.display="none";
-
-        Swal.fire({
-            icon:"error",
-            title:"Gagal menyimpan",
-            text:err
-        });
-
+    Swal.fire({
+        icon:"success",
+        title:"Data berhasil disimpan"
     });
 
+// Refresh riwayat
+loadHistory();
+
+// Reset data siswa
+currentStudent = null;
+
+document.getElementById("nama").innerHTML = "-";
+document.getElementById("nis").innerHTML = "-";
+document.getElementById("kelas").innerHTML = "-";
+document.getElementById("status").innerHTML = "Belum Scan";
+
+// Kosongkan form
+document.getElementById("jenis").value = "";
+document.getElementById("keterangan").value = "";
+
+// Nonaktifkan tombol simpan
+document.getElementById("btnSimpan").disabled = true;
+}else{
+    Swal.fire({
+        icon:"error",
+        title:data.message
+    });
 }
+    })
+    .catch(err=>{
+        document.getElementById("loading").style.display="none";
+		Swal.fire({
+		icon:"error",
+		title:"Gagal menyimpan",
+		text:String(err)
+		});
+    });
+}
+function loadHistory(){
+    fetch(API_URL+"?action=history")
+    .then(res=>res.json())
+    .then(data=>{
+        let html="";
+        if(data.length==0){
+            html="<div class='text-muted'>Belum ada data...</div>";
+        }else{
+            data.forEach(item=>{
+                html+=`
+                <div class="history-item">
+                    <b>${item.waktu}</b><br>
+                    ${item.nama}<br>
+                    ${item.kelas}<br>
+                    <span class="text-danger">${item.jenis}</span>
+                </div>
+                `;
+            });
+        }
+        document.getElementById("history").innerHTML=html;
+    })
+    .catch(err=>{
+        document.getElementById("history").innerHTML=
+        "<div class='text-danger'>Gagal memuat riwayat.</div>";
+        console.error(err);
+    });
+}
+loadHistory();
 </script>
 </body>
 </html>
