@@ -87,7 +87,7 @@ font-size:25px;
 .header{
     display:flex;
     align-items:center;
-    gap:20px;
+    gap:30px;
     padding:15px 25px;
     background:#0d6efd;
     color:#fff;
@@ -101,8 +101,8 @@ font-size:25px;
 }
 
 .logo-circle{
-    width:60px;
-    height:60px;
+    width:80px;
+    height:80px;
     background:#fff;
     border-radius:50%;
     border:4px solid #FFD54F;
@@ -114,7 +114,7 @@ font-size:25px;
 }
 
 .logo{
-    width:40px;
+    width:60px;
     height:auto;
     object-fit:contain;
     display:block;
@@ -148,7 +148,7 @@ font-size:25px;
 
     <div class="header-title">
         <i class="bi bi-award-fill"></i>
-        <span>Attendance Discipline System <br>IPEKA Pluit</span>
+        <span>Champion Character IPEKA Pluit</span>
     </div>
 </div>
 <div class="container my-4">
@@ -472,10 +472,10 @@ async function getSiswa(barcode) {
 }
 async function saveAttendance() {
 
-    if (currentStudent === null) {
+    if (!currentStudent) {
         Swal.fire({
             icon: "warning",
-            title: "Silakan scan kartu terlebih dahulu."
+            title: "Silakan scan kartu terlebih dahulu"
         });
         return;
     }
@@ -486,47 +486,39 @@ async function saveAttendance() {
     if (jenis === "") {
         Swal.fire({
             icon: "warning",
-            title: "Pilih jenis pelanggaran."
+            title: "Pilih jenis pelanggaran"
         });
         return;
     }
 
-    const btnSimpan = document.getElementById("btnSimpan");
-
-    btnSimpan.disabled = true;
     document.getElementById("loading").style.display = "flex";
+
+    const data = {
+        action: "saveAttendance",
+        barcode: currentStudent.barcode,
+        nis: currentStudent.nis,
+        nama: currentStudent.nama,
+        kelas: currentStudent.kelas,
+        jenis: jenis,
+        keterangan: keterangan
+    };
 
     try {
 
         const response = await fetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "saveAttendance",
-                barcode: currentStudent.barcode,
-                nis: currentStudent.nis,
-                nama: currentStudent.nama,
-                kelas: currentStudent.kelas,
-                jenis: jenis,
-                keterangan: keterangan
-            })
+            body: JSON.stringify(data)
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        const hasil = await response.json();
 
-        const data = await response.json();
+        document.getElementById("loading").style.display = "none";
 
-        if (data.status) {
+        if (hasil.status) {
 
             Swal.fire({
                 icon: "success",
-                title: "Data berhasil disimpan",
-                timer: 1200,
-                showConfirmButton: false
+                title: hasil.message
             });
 
             loadHistory();
@@ -538,30 +530,24 @@ async function saveAttendance() {
 
         } else {
 
-            btnSimpan.disabled = false;
-
             Swal.fire({
                 icon: "error",
-                title: data.message || "Gagal menyimpan data"
+                title: hasil.message
             });
 
         }
 
     } catch (err) {
 
-        console.error(err);
+        document.getElementById("loading").style.display = "none";
 
-        btnSimpan.disabled = false;
+        console.error(err);
 
         Swal.fire({
             icon: "error",
             title: "Gagal menyimpan",
-            text: String(err)
+            text: err.toString()
         });
-
-    } finally {
-
-        document.getElementById("loading").style.display = "none";
 
     }
 
