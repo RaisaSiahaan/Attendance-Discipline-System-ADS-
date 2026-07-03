@@ -262,98 +262,127 @@ Memproses...
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwrXcQwdx2216cL_IS0bScrz2A3oNEbVImKjqD_qu7LpVq_2vG7jkPxtumn1yNwlvk0cQ/exec";
-let currentStudent=null;
-let html5QrCode;
-let cameraRunning=false;
-const reader="reader";
+const API_URL = "https://script.google.com/macros/s/AKfycbwrXcQwdx2216cL_IS0bScrz2A3oNEbVImKjqD_qu7LpVq_2vG7jkPxtumn1yNwlvk0cQ/exec";
+
+let currentStudent = null;
+let html5QrCode = null;
+let cameraRunning = false;
+
+const reader = "reader";
 const btnCamera = document.getElementById("btnCamera");
-btnCamera.onclick = function () {
-    if(!cameraRunning){
-        startScanner();
-    }else{
+
+btnCamera.addEventListener("click", () => {
+    if (cameraRunning) {
         stopScanner();
+    } else {
+        startScanner();
     }
-};
+});
 
-function startScanner() {
-    // Jika scanner sudah dibuat sebelumnya, hapus dulu
-    if (html5QrCode) {
-        html5QrCode.clear().catch(() => {});
-    }
-    html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras()
-        .then(cameras => {
-            if (!cameras || cameras.length === 0) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Kamera tidak ditemukan"
-                });
-                return;
-            }
-            // Pilih kamera belakang jika ada
-            let cameraId = cameras[cameras.length - 1].id;
+async function startScanner() {
 
-            html5QrCode.start(
-                cameraId,
-                {
-                    fps: 10,
-                    qrbox: {
-                        width: 250,
-                        height: 250
-                    },
-                    aspectRatio: 1.777,
-                    disableFlip: false
-                },
-                onScanSuccess,
-                function(errorMessage) {
-                    // Abaikan agar console tidak penuh
-                }
-            ).then(() => {
-                cameraRunning = true;
-                btnCamera.innerHTML =
-                    '<i class="bi bi-camera-video-off"></i> Tutup Kamera';
-                document.getElementById("scanStatus").innerHTML =
-                    "📷 Kamera Aktif";
-            }).catch(err => {
-                console.error(err);
-                Swal.fire({
-                    icon: "error",
-                    title: "Gagal membuka kamera",
-                    text: err
-                });
-            });
-        })
-        .catch(err => {
-            console.error(err);
+    if (cameraRunning) return;
+
+    try {
+
+        html5QrCode = new Html5Qrcode(reader);
+
+        const cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras || cameras.length === 0) {
             Swal.fire({
                 icon: "error",
-                title: "Tidak dapat mengakses kamera",
-                text: err
+                title: "Kamera tidak ditemukan"
             });
+            return;
+        }
+
+        // Cari kamera belakang
+        const backCamera = cameras.find(camera => {
+            const label = camera.label.toLowerCase();
+            return (
+                label.includes("back") ||
+                label.includes("rear") ||
+                label.includes("environment")
+            );
         });
+
+        const cameraId = backCamera ? backCamera.id : cameras[0].id;
+
+        await html5QrCode.start(
+            cameraId,
+            {
+                fps: 10,
+                qrbox: {
+                    width: 250,
+                    height: 250
+                },
+                aspectRatio: 1.777,
+                disableFlip: false
+            },
+            onScanSuccess,
+            () => {
+                // Abaikan scan error agar console tidak penuh
+            }
+        );
+
+        cameraRunning = true;
+
+        btnCamera.innerHTML =
+            '<i class="bi bi-camera-video-off"></i> Tutup Kamera';
+
+        document.getElementById("scanStatus").textContent =
+            "📷 Kamera Aktif";
+
+    } catch (err) {
+
+        console.error(err);
+
+        Swal.fire({
+            icon: "error",
+            title: "Gagal membuka kamera",
+            text: String(err)
+        });
+
+    }
 }
 
-function stopScanner() {
+async function stopScanner() {
+
     if (!html5QrCode) return;
-    html5QrCode.stop()
-        .then(() => {
-            cameraRunning = false;
-            btnCamera.innerHTML =
-                '<i class="bi bi-camera"></i> Buka Kamera';
-            document.getElementById("scanStatus").innerHTML =
-                "Menunggu Scan...";
-        })
-        .catch(err => {
-            console.error(err);
-        });
+
+    try {
+
+        await html5QrCode.stop();
+        await html5QrCode.clear();
+
+    } catch (err) {
+
+        console.warn("Scanner sudah berhenti atau gagal dihentikan.", err);
+
+    } finally {
+
+        cameraRunning = false;
+        html5QrCode = null;
+
+        btnCamera.innerHTML =
+            '<i class="bi bi-camera"></i> Buka Kamera';
+
+        document.getElementById("scanStatus").textContent =
+            "Menunggu Scan...";
+
+    }
+
 }
 
-function onScanSuccess(decodedText) {
-    // Pause supaya QR tidak terbaca berkali-kali
+async function onScanSuccess(decodedText) {
+
+    // Hentikan sementara scanner agar QR tidak terbaca berulang
     html5QrCode.pause(true);
-    document.getElementById("scanStatus").innerHTML =
+
+    document.getElementById("scanStatus").textContent =
         "QR Berhasil Dibaca";
+
     Swal.fire({
         icon: "success",
         title: "QR Berhasil",
@@ -361,180 +390,236 @@ function onScanSuccess(decodedText) {
         timer: 1200,
         showConfirmButton: false
     });
-    console.log(decodedText);
-    // Nanti di sini akan dipanggil Apps Script
-    getStudent(decodedText);
-    setTimeout(() => {
-        html5QrCode.resume();
-        document.getElementById("scanStatus").innerHTML =
-            "Menunggu Scan...";
-    }, 2000);
+
+    try {
+
+        await getStudent(decodedText);
+
+    } catch (err) {
+
+        console.error(err);
+
+    } finally {
+
+        // Resume scanner hanya jika kamera masih aktif
+        if (cameraRunning && html5QrCode) {
+
+            setTimeout(() => {
+
+                html5QrCode.resume();
+
+                document.getElementById("scanStatus").textContent =
+                    "📷 Kamera Aktif";
+
+            }, 500);
+
+        }
+
+    }
+
 }
-function getStudent(barcode){
 
-    fetch(API_URL +
-        "?action=getStudent&barcode=" +
-        encodeURIComponent(barcode))
+async function getStudent(barcode) {
 
-    .then(response => response.json())
+    try {
 
-    .then(data => {
+        const response = await fetch(
+            `${API_URL}?action=getStudent&barcode=${encodeURIComponent(barcode)}`
+        );
 
-        if(data.status){
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status) {
 
             currentStudent = data;
 
-            document.getElementById("nama").innerHTML = data.nama;
-            document.getElementById("nis").innerHTML = data.nis;
-            document.getElementById("kelas").innerHTML = data.kelas;
-            document.getElementById("status").innerHTML = "Siap Disimpan";
+            document.getElementById("nama").textContent = data.nama;
+            document.getElementById("nis").textContent = data.nis;
+            document.getElementById("kelas").textContent = data.kelas;
+            document.getElementById("status").textContent = "Siap Disimpan";
 
             document.getElementById("btnSimpan").disabled = false;
 
-        }else{
+        } else {
 
-            currentStudent = null;
-
-            document.getElementById("nama").innerHTML = "-";
-            document.getElementById("nis").innerHTML = "-";
-            document.getElementById("kelas").innerHTML = "-";
-            document.getElementById("status").innerHTML = "Belum Scan";
-
-            document.getElementById("btnSimpan").disabled = true;
+            resetStudent();
 
             Swal.fire({
-                icon:"error",
-                title:"Siswa tidak ditemukan"
+                icon: "error",
+                title: "Siswa tidak ditemukan"
             });
 
         }
 
-    })
+    } catch (err) {
 
-    .catch(err=>{
+        console.error(err);
 
-        currentStudent = null;
-
-        document.getElementById("nama").innerHTML = "-";
-        document.getElementById("nis").innerHTML = "-";
-        document.getElementById("kelas").innerHTML = "-";
-        document.getElementById("status").innerHTML = "Belum Scan";
-
-        document.getElementById("btnSimpan").disabled = true;
+        resetStudent();
 
         Swal.fire({
-            icon:"error",
-            title:"Gagal mengambil data",
-            text:String(err)
+            icon: "error",
+            title: "Gagal mengambil data",
+            text: String(err)
         });
 
-    });
+    }
 
 }
-function saveAttendance(){
+async function saveAttendance() {
 
-    if(currentStudent == null){
-        Swal.fire("Silakan scan kartu terlebih dahulu.");
+    if (currentStudent === null) {
+        Swal.fire({
+            icon: "warning",
+            title: "Silakan scan kartu terlebih dahulu."
+        });
         return;
     }
 
     const jenis = document.getElementById("jenis").value;
     const keterangan = document.getElementById("keterangan").value;
 
-    if(jenis==""){
-        Swal.fire("Pilih jenis pelanggaran.");
+    if (jenis === "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Pilih jenis pelanggaran."
+        });
         return;
     }
 
-    document.getElementById("loading").style.display="flex";
+    const btnSimpan = document.getElementById("btnSimpan");
 
-fetch(API_URL,{
-    method:"POST",
-    headers:{
-        "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-            action:"saveAttendance",
-            barcode:currentStudent.barcode,
-            nis:currentStudent.nis,
-            nama:currentStudent.nama,
-            kelas:currentStudent.kelas,
-            jenis:jenis,
-            keterangan:keterangan
-        })
-    })
-    .then(res=>res.json())
-    .then(data=>{
+    btnSimpan.disabled = true;
+    document.getElementById("loading").style.display = "flex";
 
-        document.getElementById("loading").style.display="none";
+    try {
 
-        if(data.status){
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action: "saveAttendance",
+                barcode: currentStudent.barcode,
+                nis: currentStudent.nis,
+                nama: currentStudent.nama,
+                kelas: currentStudent.kelas,
+                jenis: jenis,
+                keterangan: keterangan
+            })
+        });
 
-    Swal.fire({
-        icon:"success",
-        title:"Data berhasil disimpan"
-    });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-// Refresh riwayat
-loadHistory();
+        const data = await response.json();
 
-// Reset data siswa
-currentStudent = null;
+        if (data.status) {
 
-document.getElementById("nama").innerHTML = "-";
-document.getElementById("nis").innerHTML = "-";
-document.getElementById("kelas").innerHTML = "-";
-document.getElementById("status").innerHTML = "Belum Scan";
+            Swal.fire({
+                icon: "success",
+                title: "Data berhasil disimpan",
+                timer: 1200,
+                showConfirmButton: false
+            });
 
-// Kosongkan form
-document.getElementById("jenis").value = "";
-document.getElementById("keterangan").value = "";
+            loadHistory();
 
-// Nonaktifkan tombol simpan
-document.getElementById("btnSimpan").disabled = true;
-}else{
-    Swal.fire({
-        icon:"error",
-        title:data.message
-    });
+            resetStudent();
+
+            document.getElementById("jenis").value = "";
+            document.getElementById("keterangan").value = "";
+
+        } else {
+
+            btnSimpan.disabled = false;
+
+            Swal.fire({
+                icon: "error",
+                title: data.message || "Gagal menyimpan data"
+            });
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        btnSimpan.disabled = false;
+
+        Swal.fire({
+            icon: "error",
+            title: "Gagal menyimpan",
+            text: String(err)
+        });
+
+    } finally {
+
+        document.getElementById("loading").style.display = "none";
+
+    }
+
 }
-    })
-    .catch(err=>{
-        document.getElementById("loading").style.display="none";
-		Swal.fire({
-		icon:"error",
-		title:"Gagal menyimpan",
-		text:String(err)
-		});
-    });
-}
-function loadHistory(){
-    fetch(API_URL+"?action=history")
-    .then(res=>res.json())
-    .then(data=>{
-        let html="";
-        if(data.length==0){
-            html="<div class='text-muted'>Belum ada data...</div>";
-        }else{
-            data.forEach(item=>{
-                html+=`
+async function loadHistory() {
+
+    const historyElement = document.getElementById("history");
+
+    try {
+
+        const response = await fetch(`${API_URL}?action=history`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+
+            historyElement.innerHTML =
+                "<div class='text-muted'>Belum ada data...</div>";
+
+            return;
+        }
+
+        let html = "";
+
+        data.forEach(item => {
+
+            html += `
                 <div class="history-item">
                     <b>${item.waktu}</b><br>
                     ${item.nama}<br>
                     ${item.kelas}<br>
                     <span class="text-danger">${item.jenis}</span>
                 </div>
-                `;
-            });
-        }
-        document.getElementById("history").innerHTML=html;
-    })
-    .catch(err=>{
-        document.getElementById("history").innerHTML=
-        "<div class='text-danger'>Gagal memuat riwayat.</div>";
+            `;
+
+        });
+
+        historyElement.innerHTML = html;
+
+    } catch (err) {
+
         console.error(err);
-    });
+
+        historyElement.innerHTML = `
+            <div class="text-danger">
+                Gagal memuat riwayat.
+            </div>
+        `;
+
+    }
+
 }
+
+// Load saat halaman dibuka
 loadHistory();
 </script>
 </body>
