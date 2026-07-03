@@ -265,7 +265,7 @@ Memproses...
 </div>
 <script>
 
-const API_URL="https://script.google.com/macros/s/AKfycbyB6xXb0q7VuuZ-oEcQXCQ_Ry81m5RFa5S_eRXVjjvPjNqE9077oKQUKah8pWjgGJIjFA/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbw0YoHxugv6T9xMidPYxTOkKL6-wPi-yCZiOXlmYBs9LrylGWPcfvEwAcSVjJMZja-1KQ/exec";
 let currentStudent=null;
 let html5QrCode;
 let cameraRunning=false;
@@ -366,12 +366,55 @@ function onScanSuccess(decodedText) {
     });
     console.log(decodedText);
     // Nanti di sini akan dipanggil Apps Script
-    // getStudent(decodedText);
+    getStudent(decodedText);
     setTimeout(() => {
         html5QrCode.resume();
         document.getElementById("scanStatus").innerHTML =
             "Menunggu Scan...";
     }, 2000);
+}
+function getStudent(barcode){
+
+    fetch(API_URL +
+        "?action=getStudent&barcode=" +
+        encodeURIComponent(barcode))
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.status){
+
+            document.getElementById("nama").innerHTML = data.nama;
+            document.getElementById("nis").innerHTML = data.nis;
+            document.getElementById("kelas").innerHTML = data.kelas;
+            document.getElementById("status").innerHTML = "Sudah ditemukan";
+
+            currentStudent = data;
+
+            document.getElementById("btnSimpan").disabled = false;
+
+        }else{
+
+            Swal.fire({
+                icon:"error",
+                title:"Siswa tidak ditemukan"
+            });
+
+        }
+
+    })
+
+    .catch(err=>{
+
+        Swal.fire({
+            icon:"error",
+            title:"Gagal mengambil data",
+            text:err
+        });
+
+    });
+
 }
 </script>
 </body>
