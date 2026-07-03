@@ -87,7 +87,7 @@ font-size:25px;
 .header{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:30px;
     padding:15px 25px;
     background:#0d6efd;
     color:#fff;
@@ -130,7 +130,7 @@ font-size:25px;
 }
 
 .header-title i{
-    font-size:20px;
+    font-size:30px;
     color:#FFD54F;
 }
 </style>
@@ -446,7 +446,14 @@ async function getSiswa(barcode) {
 
         } else {
 
-            resetStudent();
+            currentStudent = null;
+
+            document.getElementById("nama").textContent = "-";
+            document.getElementById("nis").textContent = "-";
+            document.getElementById("kelas").textContent = "-";
+            document.getElementById("status").textContent = "Belum Scan";
+
+            document.getElementById("btnSimpan").disabled = true;
 
             Swal.fire({
                 icon: "error",
@@ -459,7 +466,14 @@ async function getSiswa(barcode) {
 
         console.error(err);
 
-        resetStudent();
+        currentStudent = null;
+
+        document.getElementById("nama").textContent = "-";
+        document.getElementById("nis").textContent = "-";
+        document.getElementById("kelas").textContent = "-";
+        document.getElementById("status").textContent = "Belum Scan";
+
+        document.getElementById("btnSimpan").disabled = true;
 
         Swal.fire({
             icon: "error",
