@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbz4ykSUpERcCbLbmjoWihXtRRpNgg1EwW4LzTBfjLdqsDN_bZOx4f8a-fMWBZBDam3vIw/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbx_XNxdZaHcwe-bF7tjUYAVTt1mfFzKzXVbjnNYBruf4K-wypxoEZVRBlq8hJCuX_wf1Q/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -490,30 +490,19 @@ async function getSiswa(barcode) {
 
 async function cekPelanggaran(barcode){
 
-    try{
+    const response = await fetch(
+        `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
+    );
 
-        const response = await fetch(
-            `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
-        );
+    const data = await response.json();
 
-        const data = await response.json();
-
-        // DEBUG
-        Swal.fire({
-            title: "DEBUG",
-            html: `<pre>${JSON.stringify(data, null, 2)}</pre>`,
-            width: 700
-        });
-
-    }catch(err){
-
-        Swal.fire({
-            icon:"error",
-            title:"ERROR",
-            text:err.toString()
-        });
-
-    }
+    Swal.fire({
+        title:"DEBUG",
+        html:`
+            <pre>${JSON.stringify(data,null,2)}</pre>
+        `,
+        width:700
+    });
 
 }
 
