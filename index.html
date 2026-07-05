@@ -445,7 +445,7 @@ async function getSiswa(barcode) {
             document.getElementById("btnSimpan").disabled = false;
 
             // Tampilkan riwayat pelanggaran
-            cekPelanggaran(data.barcode);
+            await cekPelanggaran(data.barcode);
 
         } else {
 
