@@ -496,71 +496,22 @@ async function cekPelanggaran(barcode){
             `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
         );
 
-        if(!response.ok) return;
-
         const data = await response.json();
 
-        if(!data.status) return;
-
-        if(data.total <= 0) return;
-
-        let daftar = "";
-
-        data.detail.forEach(item=>{
-
-            daftar += `
-                <tr>
-                    <td>${item.jenis}</td>
-                    <td style="text-align:right">
-                        <b>${item.jumlah}x</b>
-                    </td>
-                </tr>
-            `;
-
-        });
-
-        await Swal.fire({
-
-            icon:"warning",
-
-            title:"Riwayat Pelanggaran",
-
-            html:`
-
-                <div style="text-align:left">
-
-                    <p style="font-size:18px">
-
-                        <b>Total Pelanggaran :
-                        ${data.total} kali</b>
-
-                    </p>
-
-                    <table class="table table-bordered">
-
-                        ${daftar}
-
-                    </table>
-
-                    <small>
-
-                        Pelanggaran terakhir :
-
-                        <b>${data.terakhir}</b>
-
-                    </small>
-
-                </div>
-
-            `,
-
-            width:550
-
+        // DEBUG
+        Swal.fire({
+            title: "DEBUG",
+            html: `<pre>${JSON.stringify(data, null, 2)}</pre>`,
+            width: 700
         });
 
     }catch(err){
 
-        console.log(err);
+        Swal.fire({
+            icon:"error",
+            title:"ERROR",
+            text:err.toString()
+        });
 
     }
 
