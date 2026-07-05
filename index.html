@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbzPYoGkhkj5UkMIHqDNWOI19UpL89sNinkmRRFqF8P0wDUuaApcB2cJy3NOG4rfs5oqRw/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbxvobW5lqL1-1p9U_qkwttsDnTrYbcXGBIxhKttqDsDuivFZTisX02xKnag5Vo5T9LOGg/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -488,90 +488,61 @@ async function getSiswa(barcode) {
 
 async function cekPelanggaran(barcode){
 
-    Swal.fire({
-        title:"Barcode yang dikirim",
-        text: barcode
-    });
+    try{
 
-}
-async function saveAttendance() {
+        const response = await fetch(
+            `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
+        );
 
-    if (!currentStudent) {
-        Swal.fire({
-            icon: "warning",
-            title: "Silakan scan kartu terlebih dahulu"
-        });
-        return;
-    }
+        const data = await response.json();
 
-    const jenis = document.getElementById("jenis").value;
-    const keterangan = document.getElementById("keterangan").value;
-
-    if (jenis === "") {
-        Swal.fire({
-            icon: "warning",
-            title: "Pilih jenis pelanggaran"
-        });
-        return;
-    }
-
-    document.getElementById("loading").style.display = "flex";
-
-    const data = {
-        action: "saveAttendance",
-        barcode: currentStudent.barcode,
-        nis: currentStudent.nis,
-        nama: currentStudent.nama,
-        kelas: currentStudent.kelas,
-        jenis: jenis,
-        keterangan: keterangan
-    };
-
-    try {
-
-        const response = await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-
-        const hasil = await response.json();
-
-        document.getElementById("loading").style.display = "none";
-
-        if (hasil.status) {
-
-            Swal.fire({
-                icon: "success",
-                title: hasil.message
-            });
-
-            loadHistory();
-
-            setStudent(null);
-
-            document.getElementById("jenis").value = "";
-            document.getElementById("keterangan").value = "";
-
-        } else {
-
-            Swal.fire({
-                icon: "error",
-                title: hasil.message
-            });
-
+        // Tidak ada pelanggaran
+        if(data.total === 0){
+            return;
         }
 
-    } catch (err) {
+        let html = `
+            <div style="text-align:left">
+            <p><b>Total Pelanggaran : ${data.total} kali</b></p>
 
-        document.getElementById("loading").style.display = "none";
+            <table class="table table-sm">
+        `;
 
-        console.error(err);
+        data.detail.forEach(item=>{
+
+            html += `
+                <tr>
+                    <td>• ${item.jenis}</td>
+                    <td style="text-align:right"><b>${item.jumlah}x</b></td>
+                </tr>
+            `;
+
+        });
+
+        html += `
+            </table>
+
+            <hr>
+
+            <small>
+            Pelanggaran terakhir :
+            <b>${data.terakhir}</b>
+            </small>
+
+            </div>
+        `;
 
         Swal.fire({
-            icon: "error",
-            title: "Gagal menyimpan",
-            text: err.toString()
+            icon:"warning",
+            title:"Riwayat Pelanggaran",
+            html:html,
+            width:500,
+            confirmButtonText:"OK"
         });
+
+    }catch(err){
+
+        console.error(err);
 
     }
 
