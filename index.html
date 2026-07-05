@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbx_XNxdZaHcwe-bF7tjUYAVTt1mfFzKzXVbjnNYBruf4K-wypxoEZVRBlq8hJCuX_wf1Q/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbwddlyKBBvjFU8qIeX6y4OFJrUlpotS3nWyxHYfUzcbDrAun7rTSJ_DOYgsNWHyEdUuog/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -488,45 +488,51 @@ async function getSiswa(barcode) {
 
 }
 
-function cekPelanggaran(barcode){
+async function cekPelanggaran(barcode){
 
-  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Absen_Pelanggaran");
-  const rows = sh.getDataRange().getDisplayValues(); // <-- gunakan DisplayValues
+    try{
 
-  barcode = String(barcode).trim();
+        const response = await fetch(
+            `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
+        );
 
-  let total = 0;
-  let terakhir = "";
-  const detail = {};
+        const data = await response.json();
 
-  for(let i = 1; i < rows.length; i++){
+        if(!data.status) return;
 
-    if(String(rows[i][1]).trim() !== barcode){
-      continue;
+        if(data.total <= 0) return;
+
+        let daftar = "";
+
+        data.detail.forEach(item=>{
+            daftar += `
+                <tr>
+                    <td>${item.jenis}</td>
+                    <td style="text-align:right"><b>${item.jumlah}x</b></td>
+                </tr>
+            `;
+        });
+
+        Swal.fire({
+            icon:"warning",
+            title:"Riwayat Pelanggaran",
+            html:`
+                <div style="text-align:left">
+                    <p><b>Total Pelanggaran : ${data.total} kali</b></p>
+                    <table class="table table-bordered">
+                        ${daftar}
+                    </table>
+                    <small>Pelanggaran terakhir : <b>${data.terakhir}</b></small>
+                </div>
+            `,
+            width:550
+        });
+
+    }catch(err){
+
+        console.error(err);
+
     }
-
-    const jenis = String(rows[i][5]).trim();
-
-    if(jenis === "Presensi"){
-      continue;
-    }
-
-    total++;
-
-    detail[jenis] = (detail[jenis] || 0) + 1;
-
-    terakhir = rows[i][0];
-  }
-
-  return {
-    status:true,
-    total:total,
-    terakhir:terakhir,
-    detail:Object.keys(detail).map(jenis=>({
-      jenis:jenis,
-      jumlah:detail[jenis]
-    }))
-  };
 
 }
 
