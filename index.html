@@ -565,6 +565,96 @@ async function cekPelanggaran(barcode){
     }
 
 }
+
+async function saveAttendance(){
+
+    if(!currentStudent){
+        Swal.fire({
+            icon:"warning",
+            title:"Silakan scan kartu terlebih dahulu"
+        });
+        return;
+    }
+
+    const jenis = document.getElementById("jenis").value;
+    const keterangan = document.getElementById("keterangan").value;
+
+    if(jenis===""){
+        Swal.fire({
+            icon:"warning",
+            title:"Pilih jenis pelanggaran"
+        });
+        return;
+    }
+
+    document.getElementById("loading").style.display="flex";
+
+    const kirim = {
+        action:"saveAttendance",
+        barcode:currentStudent.barcode,
+        nis:currentStudent.nis,
+        nama:currentStudent.nama,
+        kelas:currentStudent.kelas,
+        jenis:jenis,
+        keterangan:keterangan
+    };
+
+    try{
+
+        const response = await fetch(API_URL,{
+            method:"POST",
+            body:JSON.stringify(kirim)
+        });
+
+        const hasil = await response.json();
+
+        document.getElementById("loading").style.display="none";
+
+        if(hasil.status){
+
+            Swal.fire({
+                icon:"success",
+                title:hasil.message
+            });
+
+            // Refresh riwayat hari ini
+            loadHistory();
+
+            // Reset form
+            currentStudent = null;
+
+            document.getElementById("nama").textContent="-";
+            document.getElementById("nis").textContent="-";
+            document.getElementById("kelas").textContent="-";
+            document.getElementById("status").textContent="Belum Scan";
+
+            document.getElementById("jenis").value="";
+            document.getElementById("keterangan").value="";
+
+            document.getElementById("btnSimpan").disabled=true;
+
+        }else{
+
+            Swal.fire({
+                icon:"error",
+                title:hasil.message
+            });
+
+        }
+
+    }catch(err){
+
+        document.getElementById("loading").style.display="none";
+
+        Swal.fire({
+            icon:"error",
+            title:"Gagal menyimpan",
+            text:err.toString()
+        });
+
+    }
+
+}
 async function loadHistory() {
 
     const historyElement = document.getElementById("history");
