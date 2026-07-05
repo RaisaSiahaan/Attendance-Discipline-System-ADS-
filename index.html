@@ -488,77 +488,11 @@ async function getSiswa(barcode) {
 
 async function cekPelanggaran(barcode){
 
-    try{
-
-        const response = await fetch(
-            `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
-        );
-
-        const data = await response.json();
-
-        if(data.total == 0) return;
-
-        let html = `
-        <div style="text-align:left">
-
-        <b>Total Pelanggaran : ${data.total} kali</b>
-
-        <hr>
-
-        <table style="width:100%">
-        `;
-
-        data.detail.forEach(item=>{
-
-            html += `
-            <tr>
-                <td>${item.jenis}</td>
-                <td style="text-align:right">
-                    <b>${item.jumlah}x</b>
-                </td>
-            </tr>
-            `;
-
-        });
-
-        html += `
-        </table>
-
-        <hr>
-
-        <b>Pelanggaran Terakhir</b><br>
-        ${data.terakhir}
-
-        </div>
-        `;
-
-        let icon = "info";
-        let title = "Riwayat Pelanggaran";
-
-        if(data.total >= 5){
-
-            icon = "error";
-            title = "🚨 Perlu Pembinaan";
-
-        }else if(data.total >=3){
-
-            icon = "warning";
-            title = "🟠 Perlu Perhatian";
-
-        }
-
-        Swal.fire({
-            icon,
-            title,
-            html,
-            width:520
-        });
-
-    }catch(err){
-
-        console.log(err);
-
-    }
+    Swal.fire({
+        title:"Fungsi dipanggil",
+        text: barcode,
+        icon:"info"
+    });
 
 }
 async function saveAttendance() {
