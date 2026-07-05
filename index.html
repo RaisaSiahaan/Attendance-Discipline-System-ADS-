@@ -488,21 +488,45 @@ async function getSiswa(barcode) {
 
 }
 
-async function cekPelanggaran(barcode){
+function cekPelanggaran(barcode){
 
-    const response = await fetch(
-        `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
-    );
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Absen_Pelanggaran");
+  const rows = sh.getDataRange().getDisplayValues(); // <-- gunakan DisplayValues
 
-    const data = await response.json();
+  barcode = String(barcode).trim();
 
-    Swal.fire({
-        title:"DEBUG",
-        html:`
-            <pre>${JSON.stringify(data,null,2)}</pre>
-        `,
-        width:700
-    });
+  let total = 0;
+  let terakhir = "";
+  const detail = {};
+
+  for(let i = 1; i < rows.length; i++){
+
+    if(String(rows[i][1]).trim() !== barcode){
+      continue;
+    }
+
+    const jenis = String(rows[i][5]).trim();
+
+    if(jenis === "Presensi"){
+      continue;
+    }
+
+    total++;
+
+    detail[jenis] = (detail[jenis] || 0) + 1;
+
+    terakhir = rows[i][0];
+  }
+
+  return {
+    status:true,
+    total:total,
+    terakhir:terakhir,
+    detail:Object.keys(detail).map(jenis=>({
+      jenis:jenis,
+      jumlah:detail[jenis]
+    }))
+  };
 
 }
 
