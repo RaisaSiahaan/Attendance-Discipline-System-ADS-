@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbyyg91xLv6C5ViTMrFK7rAfoDvloMylUbNNWt2hPRLSGEDvlHASFGrvhIjiiaCynxb4ig/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbwG_yPaivG0DRrpfk4niPSwy44Cq-DpawrtN7gD0LE53ad9oSYUaDGZcuJPBU6UM5iwgw/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -443,12 +443,9 @@ async function getSiswa(barcode) {
             document.getElementById("status").textContent = "Siap Disimpan";
 
             document.getElementById("btnSimpan").disabled = false;
-			Swal.fire({
-    title:"Barcode",
-    text:data.barcode
-});
 
-cekPelanggaran(data.barcode);
+            // Tampilkan riwayat pelanggaran
+            cekPelanggaran(data.barcode);
 
         } else {
 
@@ -499,29 +496,71 @@ async function cekPelanggaran(barcode){
             `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
         );
 
+        if(!response.ok) return;
+
         const data = await response.json();
 
-        await Swal.fire({
-            title: "Debug Response",
-            html: `
-                <b>Barcode diterima:</b><br>
-                ${data.barcodeDiterima || "-"}<br><br>
+        if(!data.status) return;
 
-                <b>Barcode di Sheet:</b><br>
-                ${(data.barcodeDiSheet || []).join("<br>")}
-            `,
-            width: 600
+        if(data.total <= 0) return;
+
+        let daftar = "";
+
+        data.detail.forEach(item=>{
+
+            daftar += `
+                <tr>
+                    <td>${item.jenis}</td>
+                    <td style="text-align:right">
+                        <b>${item.jumlah}x</b>
+                    </td>
+                </tr>
+            `;
+
         });
 
-        return;
+        await Swal.fire({
+
+            icon:"warning",
+
+            title:"Riwayat Pelanggaran",
+
+            html:`
+
+                <div style="text-align:left">
+
+                    <p style="font-size:18px">
+
+                        <b>Total Pelanggaran :
+                        ${data.total} kali</b>
+
+                    </p>
+
+                    <table class="table table-bordered">
+
+                        ${daftar}
+
+                    </table>
+
+                    <small>
+
+                        Pelanggaran terakhir :
+
+                        <b>${data.terakhir}</b>
+
+                    </small>
+
+                </div>
+
+            `,
+
+            width:550
+
+        });
 
     }catch(err){
 
-        Swal.fire({
-            icon:"error",
-            title:"Error",
-            text:err.toString()
-        });
+        console.log(err);
 
     }
 
