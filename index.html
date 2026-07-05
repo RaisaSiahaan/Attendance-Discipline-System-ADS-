@@ -488,11 +488,29 @@ async function getSiswa(barcode) {
 
 async function cekPelanggaran(barcode){
 
-    Swal.fire({
-        title:"Fungsi dipanggil",
-        text: barcode,
-        icon:"info"
-    });
+    try{
+
+        const response = await fetch(
+            `${API_URL}?action=cekPelanggaran&barcode=${encodeURIComponent(barcode)}`
+        );
+
+        const text = await response.text();
+
+        Swal.fire({
+            title:"Response Server",
+            html:`<pre style="text-align:left">${text}</pre>`,
+            width:700
+        });
+
+    }catch(err){
+
+        Swal.fire({
+            icon:"error",
+            title:"ERROR",
+            text:err.toString()
+        });
+
+    }
 
 }
 async function saveAttendance() {
