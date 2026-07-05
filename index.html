@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbxvobW5lqL1-1p9U_qkwttsDnTrYbcXGBIxhKttqDsDuivFZTisX02xKnag5Vo5T9LOGg/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbyyg91xLv6C5ViTMrFK7rAfoDvloMylUbNNWt2hPRLSGEDvlHASFGrvhIjiiaCynxb4ig/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -443,7 +443,12 @@ async function getSiswa(barcode) {
             document.getElementById("status").textContent = "Siap Disimpan";
 
             document.getElementById("btnSimpan").disabled = false;
-			await cekPelanggaran(data.barcode);
+			Swal.fire({
+    title:"Barcode",
+    text:data.barcode
+});
+
+cekPelanggaran(data.barcode);
 
         } else {
 
@@ -496,53 +501,27 @@ async function cekPelanggaran(barcode){
 
         const data = await response.json();
 
-        // Tidak ada pelanggaran
-        if(data.total === 0){
-            return;
-        }
+        await Swal.fire({
+            title: "Debug Response",
+            html: `
+                <b>Barcode diterima:</b><br>
+                ${data.barcodeDiterima || "-"}<br><br>
 
-        let html = `
-            <div style="text-align:left">
-            <p><b>Total Pelanggaran : ${data.total} kali</b></p>
-
-            <table class="table table-sm">
-        `;
-
-        data.detail.forEach(item=>{
-
-            html += `
-                <tr>
-                    <td>• ${item.jenis}</td>
-                    <td style="text-align:right"><b>${item.jumlah}x</b></td>
-                </tr>
-            `;
-
+                <b>Barcode di Sheet:</b><br>
+                ${(data.barcodeDiSheet || []).join("<br>")}
+            `,
+            width: 600
         });
 
-        html += `
-            </table>
-
-            <hr>
-
-            <small>
-            Pelanggaran terakhir :
-            <b>${data.terakhir}</b>
-            </small>
-
-            </div>
-        `;
-
-        Swal.fire({
-            icon:"warning",
-            title:"Riwayat Pelanggaran",
-            html:html,
-            width:500,
-            confirmButtonText:"OK"
-        });
+        return;
 
     }catch(err){
 
-        console.error(err);
+        Swal.fire({
+            icon:"error",
+            title:"Error",
+            text:err.toString()
+        });
 
     }
 
