@@ -133,6 +133,24 @@ font-size:25px;
     font-size:20px;
     color:#FFD54F;
 }
+#hasilCari{
+
+    max-height:220px;
+    overflow-y:auto;
+
+}
+
+#hasilCari .list-group-item{
+
+    cursor:pointer;
+
+}
+
+#hasilCari .list-group-item:hover{
+
+    background:#e9f3ff;
+
+}
 </style>
 </head>
 <body>
@@ -166,7 +184,26 @@ Buka Kamera
 </button>
 </div>
 
+<hr>
+
+<h6>
+<i class="bi bi-search"></i>
+Cari Nama Siswa
+</h6>
+
+<input
+type="text"
+id="searchNama"
+class="form-control"
+placeholder="Ketik minimal 2 huruf nama siswa">
+
+<div
+id="hasilCari"
+class="list-group mt-2 mb-3">
+</div>
+
 <div id="reader"></div>
+
 <hr>
 <div class="status-box text-primary" id="scanStatus">
 Menunggu Scan...
@@ -262,12 +299,32 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbx72afdsX_K_y2ov1kyvml_tRzfAr1o6AbAdY8W3-AWEO0hxjINuSgbX_EkLfHJbH0Vtg/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycby-zwL2rnxCBQjtwKrytxO_IN5ZbcKDA9wSs9Opf31Y4vfwdjDJVoRka_jZxSfVPv7dzA/exec";
 
 let currentStudent = null;
+let daftarSiswa = [];
 let html5QrCode = null;
 let cameraRunning = false;
 
+const searchInput = document.getElementById("searchNama");
+const hasilCari = document.getElementById("hasilCari");
+
+let debounceTimer = null;
+
+searchInput.addEventListener("input", () => {
+    const keyword = searchInput.value.trim();
+
+    clearTimeout(debounceTimer);
+
+    if (keyword.length < 2) {
+        hasilCari.innerHTML = "";
+        return;
+    }
+
+    debounceTimer = setTimeout(() => {
+        searchSiswa(keyword);
+    }, 300);
+});
 const reader = "reader";
 const btnCamera = document.getElementById("btnCamera");
 
@@ -740,6 +797,57 @@ async function loadHistory() {
 
 }
 
+async function searchSiswa(keyword) {
+    try {
+        const response = await fetch(
+            `${API_URL}?action=searchSiswa&nama=${encodeURIComponent(keyword)}`
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // fleksibel: bisa {status,data} atau langsung array
+        const list = result.data ?? result;
+
+        if (!Array.isArray(list) || list.length === 0) {
+            hasilCari.innerHTML = `
+                <div class="list-group-item text-muted">
+                    Tidak ditemukan
+                </div>
+            `;
+            return;
+        }
+
+        renderHasilCari(list);
+
+    } catch (err) {
+        console.error(err);
+
+        hasilCari.innerHTML = `
+            <div class="list-group-item text-danger">
+                Gagal mencari data
+            </div>
+        `;
+    }
+}
+
+async function selectSiswa(barcode) {
+    searchInput.value = "";
+    hasilCari.innerHTML = "";
+
+    await getSiswa(barcode);
+}
+
+document.addEventListener("click", (e) => {
+    if (!searchInput || !hasilCari) return;
+
+    if (!searchInput.contains(e.target) && !hasilCari.contains(e.target)) {
+        hasilCari.innerHTML = "";
+    }
+});
 // Load saat halaman dibuka
 loadHistory();
 </script>
