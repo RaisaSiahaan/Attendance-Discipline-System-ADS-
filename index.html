@@ -170,125 +170,135 @@ font-size:25px;
     </div>
 </div>
 <div class="container my-4">
-<div class="row">
-<div class="col-lg-5">
-<div class="card p-3">
-<h4 class="text-center mb-3">
-<i class="bi bi-camera"></i>
-Scan Kartu Pelajar
-</h4>
-<div class="d-grid mb-3">
-<button class="btn btn-primary" id="btnCamera">
-<i class="bi bi-camera"></i>
-Buka Kamera
-</button>
-</div>
 
-<hr>
+    <div class="row g-4">
 
-<h6>
-<i class="bi bi-search"></i>
-Cari Nama Siswa
-</h6>
+        <!-- CARD SCAN -->
+        <div class="col-lg-5">
+            <div class="card p-3 h-100">
 
-<input
-type="text"
-id="searchNama"
-class="form-control"
-placeholder="Ketik minimal 2 huruf nama siswa">
+                <h4 class="text-center mb-3">
+                    <i class="bi bi-camera"></i>
+                    Scan Kartu Pelajar
+                </h4>
 
-<div
-id="hasilCari"
-class="list-group mt-2 mb-3">
-</div>
+                <div class="d-grid mb-3">
+                    <button class="btn btn-primary" id="btnCamera">
+                        <i class="bi bi-camera"></i>
+                        Buka Kamera
+                    </button>
+                </div>
 
-<div id="reader"></div>
+                <hr>
 
-<hr>
-<div class="status-box text-primary" id="scanStatus">
-Menunggu Scan...
-</div>
-</div>
-</div><br><br><br><br><br><br><br><br>
-<div class="col-lg-7">
-<div class="card p-4">
-<div class="row">
-<div class="col-md-6 mb-3">
-<div class="info-title">
-Nama
-</div>
-<div class="info-value" id="nama">
--
-</div>
-</div>
-<div class="col-md-6 mb-3">
-<div class="info-title">
-NIS
-</div>
-<div class="info-value" id="nis">
--
-</div>
-</div>
-<div class="col-md-6 mb-3">
-<div class="info-title">
-Kelas
-</div>
-<div class="info-value" id="kelas">
--
-</div>
-</div>
-<div class="col-md-6 mb-3">
-<div class="info-title">
-Status
-</div>
-<div class="info-value text-success" id="status">
-Belum Scan
-</div>
-</div>
-</div>
-<hr>
-<h5>Pelanggaran</h5>
-<select class="form-select mb-3" id="jenis">
-<option value="">-- Presensi/Pelanggaran --</option>
-<option>Presensi</option>
-<option>Datang Terlambat</option>
-<option>Salah Seragam</option>
-<option>Atribut Seragam Tidak Lengkap</option>
-<option>Rambut Panjang</option>
-<option>Terlambat Masuk Kelas</option>
-</select>
-<textarea
-class="form-control mb-3"
-rows="3"
-placeholder="Keterangan"
-id="keterangan"
-></textarea>
-<button
-id="btnSimpan"
-class="btn btn-danger btn-save"
-onclick="saveAttendance()"
-disabled>
-<i class="bi bi-save"></i>
-Simpan Data
-</button>
-</div>
-</div>
-</div>
-<div class="row mt-4">
-<div class="col-12">
-<div class="card p-3">
-<h4>
-<i class="bi bi-clock-history"></i>
-Riwayat Scan Hari Ini
-</h4>
-<div class="scan-history" id="history">
-<div class="text-muted">
-Belum ada data...
-</div>
-</div>
-</div>
-</div>
-</div>
+                <h6>
+                    <i class="bi bi-search"></i>
+                    Cari Nama Siswa
+                </h6>
+
+                <input
+                    type="text"
+                    id="searchNama"
+                    class="form-control"
+                    placeholder="Ketik minimal 2 huruf nama siswa">
+
+                <div id="hasilCari" class="list-group mt-2 mb-3"></div>
+
+                <div id="reader"></div>
+
+                <hr>
+
+                <div class="status-box text-primary" id="scanStatus">
+                    Menunggu Scan...
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CARD PROFIL SISWA -->
+        <div class="col-lg-7">
+            <div class="card p-4 h-100">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <div class="info-title">Nama</div>
+                        <div class="info-value" id="nama">-</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="info-title">NIS</div>
+                        <div class="info-value" id="nis">-</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="info-title">Kelas</div>
+                        <div class="info-value" id="kelas">-</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="info-title">Status</div>
+                        <div class="info-value text-success" id="status">
+                            Belum Scan
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <h5>Pelanggaran</h5>
+
+                <select class="form-select mb-3" id="jenis">
+                    <option value="">-- Presensi/Pelanggaran --</option>
+                    <option>Presensi</option>
+                    <option>Datang Terlambat</option>
+                    <option>Salah Seragam</option>
+                    <option>Atribut Seragam Tidak Lengkap</option>
+                    <option>Rambut Panjang</option>
+                    <option>Terlambat Masuk Kelas</option>
+                </select>
+
+                <textarea
+                    class="form-control mb-3"
+                    rows="3"
+                    placeholder="Keterangan"
+                    id="keterangan"></textarea>
+
+                <button
+                    id="btnSimpan"
+                    class="btn btn-danger btn-save"
+                    onclick="saveAttendance()"
+                    disabled>
+                    <i class="bi bi-save"></i>
+                    Simpan Data
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIWAYAT -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card p-3">
+
+                <h4>
+                    <i class="bi bi-clock-history"></i>
+                    Riwayat Scan Hari Ini
+                </h4>
+
+                <div class="scan-history" id="history">
+                    <div class="text-muted">
+                        Belum ada data...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </div>
 <div class="loading" id="loading">
 <div>
