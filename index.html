@@ -299,7 +299,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycby-zwL2rnxCBQjtwKrytxO_IN5ZbcKDA9wSs9Opf31Y4vfwdjDJVoRka_jZxSfVPv7dzA/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbyhf5oB98eTXlpHPB5wT_1Hn4-OiK60zp-lEA0TeKj0hhvjnOlctaRG2f9yodIrIe8SYA/exec";
 
 let currentStudent = null;
 let daftarSiswa = [];
@@ -799,45 +799,37 @@ async function loadHistory() {
 
 async function searchSiswa(keyword) {
     try {
+
         const response = await fetch(
             `${API_URL}?action=searchSiswa&nama=${encodeURIComponent(keyword)}`
         );
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        const text = await response.text();
+        console.log("RAW:", text);
 
-        const result = await response.json();
+        const data = JSON.parse(text);
 
-        // fleksibel: bisa {status,data} atau langsung array
-        const list = result.data ?? result;
-
-        if (!Array.isArray(list) || list.length === 0) {
-            hasilCari.innerHTML = `
-                <div class="list-group-item text-muted">
-                    Tidak ditemukan
-                </div>
-            `;
+        if (!data.status || !Array.isArray(data.data)) {
+            hasilCari.innerHTML = "<div class='text-muted p-2'>Tidak ditemukan</div>";
             return;
         }
 
-        renderHasilCari(list);
+        if (typeof renderHasilCari !== "function") {
+            console.error("renderHasilCari belum dibuat");
+            return;
+        }
+
+        renderHasilCari(data.data);
 
     } catch (err) {
-        console.error(err);
-
-        hasilCari.innerHTML = `
-            <div class="list-group-item text-danger">
-                Gagal mencari data
-            </div>
-        `;
+        console.error("SEARCH ERROR:", err);
+        hasilCari.innerHTML = "<div class='text-danger p-2'>Gagal mencari data</div>";
     }
 }
 
 async function selectSiswa(barcode) {
     searchInput.value = "";
     hasilCari.innerHTML = "";
-
     await getSiswa(barcode);
 }
 
