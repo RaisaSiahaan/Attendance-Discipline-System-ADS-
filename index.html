@@ -445,7 +445,7 @@ async function getSiswa(barcode) {
             document.getElementById("btnSimpan").disabled = false;
 
             // Tampilkan riwayat pelanggaran
-            await cekPelanggaran(data.barcode);
+            cekPelanggaran(data.barcode);
 
         } else {
 
@@ -645,6 +645,7 @@ async function loadHistory() {
                 "<div class='text-muted'>Belum ada data...</div>";
 
             return;
+
         }
 
         let html = "";
@@ -653,18 +654,12 @@ async function loadHistory() {
 
             let riwayatHtml = "";
 
-            if (!item.riwayat || item.riwayat.length === 0) {
+            if (item.riwayat && item.riwayat.length > 0) {
 
                 riwayatHtml = `
-                    <span class="text-success">
-                        <i class="bi bi-check-circle-fill"></i>
-                        Tidak ada riwayat pelanggaran
-                    </span>
+                    <div class="mt-2">
+                        <b>📊 Rekap Pelanggaran</b>
                 `;
-
-            } else {
-
-                riwayatHtml = "<ul class='mb-0'>";
 
                 item.riwayat.forEach(r => {
 
@@ -677,75 +672,69 @@ async function loadHistory() {
                     }
 
                     riwayatHtml += `
-                        <li class="mb-1">
-                            ${r.jenis}
-                            <span class="badge bg-${warna} float-end">
+                        <div class="d-flex justify-content-between border-bottom py-1">
+                            <span>${r.jenis}</span>
+                            <span class="badge bg-${warna}">
                                 ${r.jumlah}x
                             </span>
-                        </li>
+                        </div>
                     `;
 
                 });
 
-                riwayatHtml += "</ul>";
+                riwayatHtml += "</div>";
+
+            } else {
+
+                riwayatHtml = `
+                    <div class="text-success mt-2">
+                        <i class="bi bi-check-circle"></i>
+                        Tidak ada riwayat pelanggaran
+                    </div>
+                `;
 
             }
 
             html += `
+                <div class="history-item">
 
-            <div class="history-item">
+                    <div class="small text-secondary">
+                        <i class="bi bi-calendar-event"></i>
+                        ${item.tanggal}
+                        &nbsp;&nbsp;
+                        <i class="bi bi-clock"></i>
+                        ${item.waktu}
+                    </div>
 
-                <div class="small text-secondary mb-2">
+                    <div class="fw-bold mt-1">
+                        ${item.nama}
+                    </div>
 
-                    <i class="bi bi-calendar-event"></i>
-                    ${item.tanggal}
+                    <div class="text-muted">
+                        ${item.kelas}
+                    </div>
 
-                    &nbsp;&nbsp;
-
-                    <i class="bi bi-clock"></i>
-                    ${item.waktu}
-
-                </div>
-
-                <div class="fw-bold fs-6">
-                    ${item.nama}
-                </div>
-
-                <div class="text-muted mb-2">
-                    ${item.kelas}
-                </div>
-
-                <div class="mb-2">
-                    <span class="badge bg-primary">
-                        ${item.jenis}
-                    </span>
-                </div>
-
-                <div class="mt-2">
-
-                    <b>
-                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                        Riwayat Pelanggaran
-                    </b>
+                    <div class="mt-2">
+                        <span class="badge bg-primary">
+                            ${item.jenis}
+                        </span>
+                    </div>
 
                     ${riwayatHtml}
 
                 </div>
-
-            </div>
-
             `;
 
         });
 
         historyElement.innerHTML = html;
 
-    } catch (err) {
+    } catch(err){
 
         console.error(err);
 
         historyElement.innerHTML =
-        "<div class='text-danger'>Gagal memuat riwayat.</div>";
+            "<div class='text-danger'>Gagal memuat riwayat.</div>";
 
     }
 
