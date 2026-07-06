@@ -262,7 +262,7 @@ Memproses...
 </div>
 
 <script>
-const API_URL ="https://script.google.com/macros/s/AKfycbwddlyKBBvjFU8qIeX6y4OFJrUlpotS3nWyxHYfUzcbDrAun7rTSJ_DOYgsNWHyEdUuog/exec";
+const API_URL ="https://script.google.com/macros/s/AKfycbxz9cGq0MZnrirEZHZe7Fc_brSDTs8BPGIWhcBadV7H7wQoJ6aM_kQD2-yj_bBpkfJVZg/exec";
 
 let currentStudent = null;
 let html5QrCode = null;
@@ -651,14 +651,89 @@ async function loadHistory() {
 
         data.forEach(item => {
 
+            let riwayatHtml = "";
+
+            if (!item.riwayat || item.riwayat.length === 0) {
+
+                riwayatHtml = `
+                    <span class="text-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Tidak ada riwayat pelanggaran
+                    </span>
+                `;
+
+            } else {
+
+                riwayatHtml = "<ul class='mb-0'>";
+
+                item.riwayat.forEach(r => {
+
+                    let warna = "success";
+
+                    if (r.jumlah >= 4) {
+                        warna = "danger";
+                    } else if (r.jumlah >= 2) {
+                        warna = "warning";
+                    }
+
+                    riwayatHtml += `
+                        <li class="mb-1">
+                            ${r.jenis}
+                            <span class="badge bg-${warna} float-end">
+                                ${r.jumlah}x
+                            </span>
+                        </li>
+                    `;
+
+                });
+
+                riwayatHtml += "</ul>";
+
+            }
+
             html += `
-                <div class="history-item">
-                    <b>${item.waktu}</b><br>
-					${item.tanggal}<br>
-                    ${item.nama}<br>
-                    ${item.kelas}<br>
-                    <span class="text-danger">${item.jenis}</span>
+
+            <div class="history-item">
+
+                <div class="small text-secondary mb-2">
+
+                    <i class="bi bi-calendar-event"></i>
+                    ${item.tanggal}
+
+                    &nbsp;&nbsp;
+
+                    <i class="bi bi-clock"></i>
+                    ${item.waktu}
+
                 </div>
+
+                <div class="fw-bold fs-6">
+                    ${item.nama}
+                </div>
+
+                <div class="text-muted mb-2">
+                    ${item.kelas}
+                </div>
+
+                <div class="mb-2">
+                    <span class="badge bg-primary">
+                        ${item.jenis}
+                    </span>
+                </div>
+
+                <div class="mt-2">
+
+                    <b>
+                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                        Riwayat Pelanggaran
+                    </b>
+
+                    ${riwayatHtml}
+
+                </div>
+
+            </div>
+
             `;
 
         });
@@ -669,22 +744,11 @@ async function loadHistory() {
 
         console.error(err);
 
-        historyElement.innerHTML = `
-            <div class="text-danger">
-                Gagal memuat riwayat.
-            </div>
-        `;
+        historyElement.innerHTML =
+        "<div class='text-danger'>Gagal memuat riwayat.</div>";
 
     }
 
-}
-function setStudent(data) {
-   currentStudent = data;
-   document.getElementById("nama").textContent = data?.nama || "-";
-   document.getElementById("nis").textContent = data?.nis || "-";
-   document.getElementById("kelas").textContent = data?.kelas || "-";
-   document.getElementById("status").textContent = data ? "Siap Disimpan" : "Belum Scan";
-   document.getElementById("btnSimpan").disabled = !data;
 }
 
 // Load saat halaman dibuka
